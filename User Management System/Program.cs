@@ -1,4 +1,3 @@
-
 using Infrasturcture.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,23 +8,25 @@ namespace User_Management_System
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
             builder.Services.AddControllers();
-            builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
             builder.Services.AddDbContext<UserDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DbConnection")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
+            );
 
             var app = builder.Build();
-
-            if (app.Environment.IsDevelopment())
+            using (var scope = app.Services.CreateScope())
             {
-                app.MapOpenApi();
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                db.Database.Migrate();
             }
 
-            app.UseHttpsRedirection();
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
             app.UseAuthorization();
             app.MapControllers();
             app.Run();
