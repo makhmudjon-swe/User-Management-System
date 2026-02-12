@@ -61,6 +61,7 @@ namespace User_Management_System
 
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseMiddleware<Middleware.UserStatusMiddleware>();
             app.UseAuthorization();
