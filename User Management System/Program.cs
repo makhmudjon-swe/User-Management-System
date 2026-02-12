@@ -20,6 +20,17 @@ namespace User_Management_System
             builder.Services.AddDbContext<UserDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", p =>
+                    p.WithOrigins(
+                        "http://localhost:5173",
+                        "https://user-management-system-ui-delta.vercel.app/"
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                );
+            });
             builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
             builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>();
             JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
