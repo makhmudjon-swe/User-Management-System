@@ -50,13 +50,21 @@ namespace User_Management_System.Controllers
             }
 
             var confirmLink = $"{Request.Scheme}://{Request.Host}/api/auth/confirm-email?token={user.VerficationToken}";
-            await _email.SendConfirmEmailAsync(user.Email, confirmLink);
+
+            try
+            {
+                await _email.SendConfirmEmailAsync(user.Email, confirmLink);
+            }
+            catch (Exception ex)
+            {
+            }
 
             return Ok(new
             {
-                message = "Registered. Confirmation email should be sent.",
+                message = "Registered. Confirmation email sent",
             });
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(Login login)
