@@ -25,7 +25,7 @@ namespace User_Management_System
                 options.AddPolicy("AllowFrontend", p =>
                     p.WithOrigins(
                         "http://localhost:5173",
-                        "https://user-management-system-ui-delta.vercel.app/"
+                        "https://user-management-system-ui-delta.vercel.app"
                     )
                     .AllowAnyHeader()
                     .AllowAnyMethod()
