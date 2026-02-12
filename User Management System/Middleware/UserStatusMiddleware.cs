@@ -1,4 +1,5 @@
-﻿using Domain.Enums;
+﻿using System.Security.Claims;
+using Domain.Enums;
 using Infrasturcture.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +25,10 @@ public class UserStatusMiddleware
 
         if (!isFree && ctx.User.Identity?.IsAuthenticated == true)
         {
-            var sub = ctx.User.FindFirst("sub")?.Value;
+            var sub =
+                ctx.User.FindFirst("sub")?.Value
+                ?? ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // <-- MUHIM
+
             if (!Guid.TryParse(sub, out var userId))
             {
                 ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -39,6 +43,7 @@ public class UserStatusMiddleware
                 await ctx.Response.WriteAsync("User not found");
                 return;
             }
+
             if (user.Status == UserStatus.Blocked)
             {
                 ctx.Response.StatusCode = StatusCodes.Status403Forbidden;

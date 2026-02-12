@@ -3,6 +3,7 @@ using Infrasturcture.DataAccess;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace User_Management_System
@@ -21,6 +22,7 @@ namespace User_Management_System
             );
             builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
             builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>();
+            JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
