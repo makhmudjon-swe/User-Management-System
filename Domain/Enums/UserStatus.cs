@@ -4,6 +4,6 @@
     {
         Unverified = 0,
         Active = 1,
-        Block = 2
+        Blocked = 2
     }
 }

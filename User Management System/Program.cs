@@ -1,5 +1,9 @@
+using Application.Services;
 using Infrasturcture.DataAccess;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace User_Management_System
 {
@@ -12,14 +16,28 @@ namespace User_Management_System
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            var cs = builder.Configuration.GetConnectionString("DefaultConnection");
-            Console.WriteLine("DB HOST = " + new Npgsql.NpgsqlConnectionStringBuilder(cs).Host);
-
-            builder.Services.AddDbContext<UserDbContext>(options => options.UseNpgsql(cs));
-
             builder.Services.AddDbContext<UserDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
+            builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+            builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var jwt = builder.Configuration.GetSection("Jwt");
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwt["Issuer"],
+                        ValidAudience = jwt["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!)),
+                        ClockSkew = TimeSpan.FromSeconds(30)
+                    };
+                });
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
@@ -30,7 +48,8 @@ namespace User_Management_System
 
             app.UseSwagger();
             app.UseSwaggerUI();
-
+            app.UseAuthentication();
+            app.UseMiddleware<Middleware.UserStatusMiddleware>();
             app.UseAuthorization();
             app.MapControllers();
             app.Run();

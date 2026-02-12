@@ -1,0 +1,1 @@
+﻿public record DeleteUsersDto(List<Guid> Ids);
